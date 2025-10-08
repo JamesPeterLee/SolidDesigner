@@ -1,6 +1,6 @@
-#pragma once
-// ´ËÍ·ÎÄ¼ş°üº¬DLLµ¼³öµÄºê
-#include "AliceMacroDefines.h"
+ï»¿#pragma once
+// æ­¤å¤´æ–‡ä»¶åŒ…å«DLLå¯¼å‡ºçš„å®
+#include "AliceMacroDefinitions.h"
 #include <iostream>
 #ifdef ALICE_UI_ROBOT_HOME
 #define ALICE_UI_ROBOT_EXPORT DLL_EXPORT

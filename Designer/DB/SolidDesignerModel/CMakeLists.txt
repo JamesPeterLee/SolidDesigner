@@ -19,9 +19,9 @@ FILE(GLOB HEADER_FILES "${PROJECT_SOURCE_DIR}/Designer/DB/SolidDesignerModel/*.h
 #source_group("" FILES ${HEADER_FILES})
 
 #-----------------------------------------------------------------------------
-# 库文件链接路径(ALICE_LibDir 在上级定义了)
+# 库文件链接路径(ALICE_LIB_DIR 在上级定义了)
 #-----------------------------------------------------------------------------
-link_directories(${ALICE_LibDir})
+link_directories(${ALICE_LIB_DIR})
 
 #-----------------------------------------------------------------------------
 # 头文件搜索路径

@@ -1,6 +1,6 @@
-#pragma once
-// ´ËÍ·ÎÄ¼ş°üº¬DLLµ¼³öµÄºê
-#include "AliceMacroDefines.h"
+ï»¿#pragma once
+// æ­¤å¤´æ–‡ä»¶åŒ…å«DLLå¯¼å‡ºçš„å®
+#include "AliceMacroDefinitions.h"
 #include <iostream>
 #ifdef SOLID_DESIGNER_MODEL_HOME
 #define SOLIDDESIGNER_MODEL_EXPORT DLL_EXPORT

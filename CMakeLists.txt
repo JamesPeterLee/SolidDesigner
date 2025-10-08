@@ -1,7 +1,7 @@
 ##########################################################################################################
 #--Date:    2021.03.10
 #--Project: SolidRender
-#--Author:  xu xu
+#--Author:  hubery.x.hsu
 #--Note:位于SolidRender顶级目录下面
 #--2021.10.03: 增加INSTALL项目，实现工程的自动安装功能
 #              今日对工程的生成目录做重大调整，以后禁止VS工程的路径与源码同目录
@@ -18,14 +18,15 @@ project(SolidDesigner VERSION 1.1.0  LANGUAGES CXX  DESCRIPTION "SolidRender is 
 #-----------------------------------------------------------------------------
 # 编译系统设置
 #-----------------------------------------------------------------------------
-# 指定是否使用编译器特定的扩展
-set(CMAKE_CXX_EXTENSIONS OFF)
 
 #设置C++标准
-set(CMAKE_CXX_STANDARDS 11)
+set(CMAKE_CXX_STANDARD 17)
 
 # 是否强制要求C++标准为${CMAKE_CXX_STANDARD},如果为OFF则可能使用旧的标准
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
+
+# 指定是否使用编译器特定的扩展
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 #VS /MT模式的设置
 message("The cmake source dir is:")
@@ -165,15 +166,42 @@ endif()
 #-----------------------------------------------------------------------------
 # 定义全局的链接路径
 #-----------------------------------------------------------------------------
-set(ALICE_LibDir, ${CMAKE_BINARY_DIR}/${Alice}/${Configuration})
+message("ALICE_LIB_DIR: ")
 
+if(CMAKE_GENERATOR MATCHES "Visual Studio")
+  # VS: 有平台子目录（x64/Win32），并且是多配置
+  set(ALICE_LIB_DIR "${CMAKE_BINARY_DIR}/${CMAKE_VS_PLATFORM_NAME}/$<CONFIG>")
 
+elseif(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+  # Ninja 多配置（CMake 3.17+）
+  set(ALICE_LIB_DIR "${CMAKE_BINARY_DIR}/$<CONFIG>")
+
+elseif(CMAKE_GENERATOR STREQUAL "Ninja")
+  # Ninja 单配置：依赖 CMAKE_BUILD_TYPE
+  # 例：cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug ..
+  set(ALICE_LIB_DIR "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+
+else()
+  # 其他生成器兜底：先按“多配置”判断
+  if(CMAKE_CONFIGURATION_TYPES)
+    set(ALICE_LIB_DIR "${CMAKE_BINARY_DIR}/$<CONFIG>")
+  else()
+    set(ALICE_LIB_DIR "${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+  endif()
+endif()
+
+message("${ALICE_LIB_DIR}")
 #-----------------------------------------------------------------------------
 # 定义GNU标准的安装目录（GNUInstallDirs.cmake）
 #-----------------------------------------------------------------------------
 include(GNUInstallDirs)
 set(CMAKE_INSTALL_LIBDIR "lib")
 
+#-----------------------------------------------------------------------------
+# 设置SPDLOG
+#-----------------------------------------------------------------------------
+set(SPDLOG_HEADER_ONLY ON CACHE BOOL "" FORCE)
+set(SPDLOG_FMT_EXTERNAL OFF CACHE BOOL "" FORCE)
 
 #-----------------------------------------------------------------------------
 # 定义源代码的路径

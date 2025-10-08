@@ -4,7 +4,7 @@
 //#include "AliceNew.h"
 //#include "AliceIApplicationProxyManager.h"
 //#include "AliceTransferOwnership.h"
-//#include "AliceDebugMessage.h"
+//#include "AliceDiagnosticMacro.h"
 
 using namespace log4cplus::helpers;
 //using namespace alice;
