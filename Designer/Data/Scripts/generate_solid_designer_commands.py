@@ -19,6 +19,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Dict, Set
 
+# 避免与 Windows 头文件中的宏冲突（例如 HELP_CONTENTS）
+# Windows ヘッダのマクロ衝突を回避（例：HELP_CONTENTS）
+WIN32_MACRO_CONFLICTS = {
+    "HELP_CONTENTS",
+}
+
+
 print("[DEBUG] argv:", sys.argv)
 
 @dataclass
@@ -41,6 +48,7 @@ def parse_commands(xml_path: Path) -> List[CommandSpec]:
     root = tree.getroot()
 
     # 兼容两种写法：<CommandsConfig> 或 <commands>
+    # 2通りの書き方に対応：<CommandsConfig> または <commands>
     commands_nodes = []
     if root.tag.lower().endswith("commandsconfig"):
         commands_nodes = root.findall(".//commands/command")
@@ -64,6 +72,7 @@ def parse_commands(xml_path: Path) -> List[CommandSpec]:
         print(f"[WARN] No <command> elements found in '{xml_path}'", file=sys.stderr)
 
     # 检查重复 id
+    # 重複する id をチェック
     seen_ids: Set[str] = set()
     duplicates: Set[str] = set()
     for c in specs:
@@ -77,6 +86,7 @@ def parse_commands(xml_path: Path) -> List[CommandSpec]:
         sys.exit(1)
 
     # 排序：按 id 排一下，保证生成文件稳定
+    # ソート：id で並べて生成結果を安定化
     specs.sort(key=lambda c: c.id)
     return specs
 
@@ -91,6 +101,7 @@ def id_to_const_name(cmd_id: str) -> str:
             result_chars.append(ch.upper())
         else:
             # '.' '-' ' ' 等全部归一成 '_'
+            # '.' '-' ' ' などはすべて '_' に正規化
             result_chars.append('_')
     name = "".join(result_chars)
 
@@ -106,6 +117,11 @@ def id_to_const_name(cmd_id: str) -> str:
     # 如果第一个字符是数字，前面加前缀
     # 先頭が数字の場合は接頭辞を付与
     if name and name[0].isdigit():
+        name = "CMD_" + name
+
+    # 避免与 Windows 宏冲突（如 HELP_CONTENTS）
+    # Windows マクロ衝突を回避（例：HELP_CONTENTS）
+    if name in WIN32_MACRO_CONFLICTS and not name.startswith("CMD_"):
         name = "CMD_" + name
 
     if not name:
