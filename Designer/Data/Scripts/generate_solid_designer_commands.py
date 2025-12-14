@@ -95,13 +95,16 @@ def id_to_const_name(cmd_id: str) -> str:
     name = "".join(result_chars)
 
     # 去掉重复的 '_'（比如 ".."）
+    # 連続する '_' を除去（例：".."）
     while "__" in name:
         name = name.replace("__", "_")
 
     # 去掉头尾 '_'
+    # 先頭・末尾の '_' を削除
     name = name.strip("_")
 
     # 如果第一个字符是数字，前面加前缀
+    # 先頭が数字の場合は接頭辞を付与
     if name and name[0].isdigit():
         name = "CMD_" + name
 
@@ -119,6 +122,7 @@ def generate_header(specs: List[CommandSpec],
     Generate SolidDesignerCommands.h into out_path.
     """
     # 检查常量名是否冲突
+    # 定数名の衝突をチェック
     const_map: Dict[str, CommandSpec] = {}
     collisions: Dict[str, List[str]] = {}
 
@@ -165,6 +169,7 @@ def generate_header(specs: List[CommandSpec],
     )
 
     # 按 category 分组输出，便于阅读
+    # category ごとにグループ化して出力（可読性向上）
     by_category: Dict[str, List[CommandSpec]] = {}
     for c in specs:
         cat = c.category or "uncategorized"
@@ -176,6 +181,7 @@ def generate_header(specs: List[CommandSpec],
             const_name = id_to_const_name(c.id)
 
             # label 作为注释
+            # label をコメントとして付与
             label_comment = f" // {c.label}" if c.label else ""
             lines.append(
                 f'        inline constexpr std::string_view {const_name:<30} = "{c.id}";{label_comment}'
