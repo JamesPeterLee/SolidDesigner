@@ -243,7 +243,7 @@ endif()
 add_subdirectory(Alice)
 
 # 外部项目(包括第三方库)
-add_subdirectory(externals)
+add_subdirectory(Externals)
 
 # 单元测试
 add_subdirectory(UnitTest)
