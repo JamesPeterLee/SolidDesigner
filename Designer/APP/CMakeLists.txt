@@ -51,7 +51,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #  给SolidRender这个工程配置第三方的库
 #============================================================================#
 set(CMAKE_PREFIX_PATH "C:/Qt/Qt5.15.14/5.15.14/msvc2019_64")
-find_package(Qt5 COMPONENTS Core Gui Widgets NetWork Quick Qml REQUIRED)
+find_package(Qt5 COMPONENTS Core Gui Widgets Network Quick Qml REQUIRED)
 
 # 设置QT的头文件包含路径
 # 如果找不到环境变量QTDIR的路径，那么自己设置吧; 也可以在GUI交互界面上手动设置
