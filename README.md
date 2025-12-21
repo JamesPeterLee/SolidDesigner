@@ -1,6 +1,6 @@
 # SolidDesigner 
 
-#  [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md)
+## [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Русский](README.ru.md)
 
 **An open‑source platform for parametric CAD, high‑fidelity CAE, and topology optimization — with simulation‑driven design and AI assistance.**
 
