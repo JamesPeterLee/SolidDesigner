@@ -9,8 +9,7 @@ message(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>Designer app Directory<<<<<<<<<
 message("CMAKE_SOURCE_DIR == ")
 message("${CMAKE_SOURCE_DIR}")
 message("${CMAKE_CURRENT_SOURCE_DIR}")
-add_definitions(-D_USRDLL)
-add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+
 # 批量添加程序文件，包括源文件 头文件 资源文件等
 # 注意路径是当前目录，不然的话文件无法正确添加到VS中
 FILE(GLOB APP_FILES "${PROJECT_SOURCE_DIR}/Designer/APP/*.cpp" "${PROJECT_SOURCE_DIR}/Designer/APP/*.h")
@@ -51,32 +50,36 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #============================================================================#
 #  给SolidRender这个工程配置第三方的库
 #============================================================================#
+if(WIN32)
 set(CMAKE_PREFIX_PATH "C:/Qt/Qt5.15.14/5.15.14/msvc2019_64")
-find_package(Qt5 COMPONENTS Core Gui Widgets NetWork Quick Qml REQUIRED)
-
 # 设置QT的头文件包含路径
 # 如果找不到环境变量QTDIR的路径，那么自己设置吧; 也可以在GUI交互界面上手动设置
 SET(QTDIR C:/Qt/Qt5.15.14/5.15.14/msvc2019_64)
+endif()
+
+find_package(Qt5 COMPONENTS Core Gui Widgets Network Quick Qml REQUIRED)
+
 
 # QT5头文件路径
-message("----------------qt5 files include directory--------------------")
-include_directories(${QTDIR}/include)
-include_directories(${QTDIR}/include/QtWidgets)
-include_directories(${QTDIR}/include/QtCore)
-include_directories(${QTDIR}/include/QtGui)
-include_directories(${QTDIR}/include/QtOpenGL)
-include_directories(${QTDIR}/include/QtMultimedia)
-include_directories(${QTDIR}/include/QtQuick)
-include_directories(${QTDIR}/include/QtQml)
-include_directories(${QTDIR}/include/QtNetwork)
-include_directories(${QTDIR}/mkspecs/win32-msvc2012)
+if(WIN32)
+    message("----------------qt5 files include directory--------------------")
+    include_directories(${QTDIR}/include)
+    include_directories(${QTDIR}/include/QtWidgets)
+    include_directories(${QTDIR}/include/QtCore)
+    include_directories(${QTDIR}/include/QtGui)
+    include_directories(${QTDIR}/include/QtOpenGL)
+    include_directories(${QTDIR}/include/QtMultimedia)
+    include_directories(${QTDIR}/include/QtQuick)
+    include_directories(${QTDIR}/include/QtQml)
+    include_directories(${QTDIR}/include/QtNetwork)
+    include_directories(${QTDIR}/mkspecs/win32-msvc2012)
 
-#-----------------------------------------------------------------------------
-# 添加需要链接的库文件目录LINK_DIRECTORIES
-# 例如QT库
-#-----------------------------------------------------------------------------
-link_directories(${QTDIR}/lib)
-
+    #-----------------------------------------------------------------------------
+    # 添加需要链接的库文件目录LINK_DIRECTORIES
+    # 例如QT库
+    #-----------------------------------------------------------------------------
+    link_directories(${QTDIR}/lib)
+endif()
 
 #-----------------------------------------------------------------------------
 #---------------------------第三方库的头文件和二进制文件----------------------
@@ -113,21 +116,6 @@ link_directories(${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE})
 
 
 #-----------------------------------------------------------------------------
-# 库文件链接路径<add_executable之前>
-# link_libraries 不会为每个目标生成链接路径。而是直接添加库的名称。
-#-----------------------------------------------------------------------------
-message("PROJECT_NAME = ${PROJECT_NAME}")
-link_libraries(glu32.lib)
-link_libraries(glew32.lib)
-link_libraries(opengl32.lib)
-link_libraries(freeimage.lib)
-link_libraries(log4cplusU.lib)
-link_libraries(AliceCoreApplicationInterface.lib)
-link_libraries(AliceUiFrameWork.lib)
-link_libraries(AliceBasicTool.lib)
-link_libraries(AliceComponentSystem.lib)
-link_libraries(AliceLaunchInterface.lib)
-#-----------------------------------------------------------------------------
 # QRC文件打包及前处理命令
 #-----------------------------------------------------------------------------
 set(GEN_RCC_BAT   "${CMAKE_SOURCE_DIR}/Designer/UIResource/GenerateRcc.bat")
@@ -137,10 +125,6 @@ set(SD_RCC_FILE   "${SD_RCC_DIR}/SolidDesignerRes.rcc")
 
 # 收集所有 .qrc（改变时触发重建）
 file(GLOB_RECURSE SD_QRCS "${GEN_RCC_WD}/*.qrc")
-
-
-
-
 
 
 #-----------------------------------------------------------------------------
@@ -157,16 +141,42 @@ add_executable(${PROJECT_NAME}
  ${HEADER_HPP_FILES}
  ${APP_FILES})
 
- # 定义：如何生成 .rcc
+
+# 目标级编译宏（代替全局 add_definitions）
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
+        _USRDLL
+        _CRT_SECURE_NO_WARNINGS
+)
+
+
+# 定义：如何生成 .rcc
+if(WIN32)
 add_custom_command(OUTPUT "${SD_RCC_FILE}"
   COMMAND ${CMAKE_COMMAND} -E make_directory "${SD_RCC_DIR}"
   COMMAND ${CMAKE_COMMAND} -E echo ">>> GenerateRCC: ${GEN_RCC_BAT} -> ${SD_RCC_FILE}"
-  COMMAND ${CMAKE_COMMAND} -E env "QTDIR_X64=$ENV{QTDIR_X64}" "${GEN_RCC_BAT}" "${SD_RCC_DIR}"
+  COMMAND ${CMAKE_COMMAND} -E env "QTDIR_X64=$ENV{QTDIR_X64}" "${GEN_RCC_BAT}" "${SD_RCC_DIR}" #real execution
 
   WORKING_DIRECTORY "${GEN_RCC_WD}"
   DEPENDS ${SD_QRCS}           # .qrc 变更触发
   VERBATIM
 )
+else()
+ # Linux/macOS：用 Qt 的 rcc 直接生成二进制 rcc
+  find_program(QT_RCC_EXECUTABLE NAMES rcc rcc-qt5)
+  if(NOT QT_RCC_EXECUTABLE)
+    message(FATAL_ERROR "Qt rcc not found. Ensure Qt is installed and rcc is in PATH.")
+  endif()
+
+  add_custom_command(
+  OUTPUT  "${SD_RCC_FILE}"
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${SD_RCC_DIR}"
+  COMMAND "${QT_RCC_EXECUTABLE}" -binary ${SD_QRCS} -o "${SD_RCC_FILE}"
+  WORKING_DIRECTORY "${GEN_RCC_WD}"
+  DEPENDS ${SD_QRCS}
+  VERBATIM
+)
+endif()
 
  # 声明一个“资源生成”目标，并让可执行程序依赖它
 add_custom_target(SolidDesignerRes ALL DEPENDS "${SD_RCC_FILE}")
@@ -199,23 +209,56 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/source/resource/data" DESTINATION "${INST
 
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/source/resource/Script" DESTINATION "${INSTALL_DIR}/INSTALL")
 
-set(CMAKE_GENERATOR_PLATFORM x64)
-if(SOLIDRENDER_WIN)
-    if("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64")
-        #install(DIRECTORY "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}" DESTINATION "${INSTALL_DIR}/INSTALL" FILES_MATCHING PATTERN "*.dll" PATTERN "${CMAKE_BUILD_TYPE}" EXCLUDE)
-        install(FILES "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}/CommandSystem.dll" DESTINATION "${INSTALL_DIR}/INSTALL" )
-        install(FILES "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}/AlicePropertyBrowser.dll" DESTINATION "${INSTALL_DIR}/INSTALL" )
-        install(FILES "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}/XFrameWork.dll" DESTINATION "${INSTALL_DIR}/INSTALL" )
-        install(FILES "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}/XRibbonBar.dll" DESTINATION "${INSTALL_DIR}/INSTALL" )
-        install(FILES "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}/XToolbar.dll" DESTINATION "${INSTALL_DIR}/INSTALL" )
-    endif()
 
-    if("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "Win32")
-        install(DIRECTORY "${CMAKE_BINARY_DIR}/x86/${CMAKE_BUILD_TYPE}"  DESTINATION "${INSTALL_DIR}/INSTALL")
-    endif()
 
-elseif(SOLIDRENDER_LINUX)  
-    install(DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}"  DESTINATION "${INSTALL_DIR}/INSTALL")
+# if(SOLIDRENDER_WIN)
+    # if("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64")
+        # #install(DIRECTORY "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}" DESTINATION "${INSTALL_DIR}/INSTALL" FILES_MATCHING PATTERN "*.dll" PATTERN "${CMAKE_BUILD_TYPE}" EXCLUDE)
+        # install(FILES "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}/CommandSystem.dll" DESTINATION "${INSTALL_DIR}/INSTALL" )
+        # install(FILES "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}/AlicePropertyBrowser.dll" DESTINATION "${INSTALL_DIR}/INSTALL" )
+        # install(FILES "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}/XFrameWork.dll" DESTINATION "${INSTALL_DIR}/INSTALL" )
+        # install(FILES "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}/XRibbonBar.dll" DESTINATION "${INSTALL_DIR}/INSTALL" )
+        # install(FILES "${CMAKE_BINARY_DIR}/x64/${CMAKE_BUILD_TYPE}/XToolbar.dll" DESTINATION "${INSTALL_DIR}/INSTALL" )
+    # endif()
+
+    # if("${CMAKE_GENERATOR_PLATFORM}" STREQUAL "Win32")
+        # install(DIRECTORY "${CMAKE_BINARY_DIR}/x86/${CMAKE_BUILD_TYPE}"  DESTINATION "${INSTALL_DIR}/INSTALL")
+    # endif()
+
+# elseif(SOLIDRENDER_LINUX)  
+    # install(DIRECTORY "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}"  DESTINATION "${INSTALL_DIR}/INSTALL")
+# endif()
+
+
+#-----------------------------------------------------------------------------
+# 链接第三方的库
+# @1、链接的动作需要放到add_library之后
+#-----------------------------------------------------------------------------
+
+find_package(OpenGL REQUIRED)
+message("PROJECT_NAME = ${PROJECT_NAME}")
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        glu32
+        glew32
+        opengl32
+        freeimage
+        log4cplusU
+        AliceCoreApplicationInterface
+        AliceUiFrameWork
+        AliceBasicTool
+        AliceLaunchInterface
+    )
+else()
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        OpenGL::GL 
+        OpenGL::GLU
+        AliceCoreApplicationInterface
+        AliceUiFrameWork
+        AliceBasicTool
+        AliceLaunchInterface
+    )
 endif()
+
 
 message(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>End Designer APP<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")

@@ -1,0 +1,13 @@
+<Plugin>
+  <Company>alice</Company>
+  <Id>DemoDependencyPlugin</Id>
+  <Name>Demo Dependency Plugin</Name>
+  <RelativePath>Plugins/SolidDemoDependencyPlugin.dll</RelativePath>
+
+  <Dependencies>
+     
+  </Dependencies>
+
+  <LoadAtStartUp>true</LoadAtStartUp>
+  <Intrinsic>false</Intrinsic>
+</Plugin>

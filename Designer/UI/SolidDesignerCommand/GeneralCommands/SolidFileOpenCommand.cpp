@@ -1,4 +1,4 @@
-#include "SolidFileOpenCommand.h"
+ï»¿#include "SolidFileOpenCommand.h"
 
 #include "AliceIMainWindow.h"
 #include "AliceIDocumentManager.h"
@@ -11,12 +11,13 @@ using namespace alice;
 using namespace sdr;
 
 SolidFileOpenCommand::SolidFileOpenCommand() noexcept
+	: AppCommandBase(std::string(Cmd::FILE_OPEN))
 {
 }
 
-const std::string_view& SolidFileOpenCommand::Id() const noexcept
+SolidFileOpenCommand::~SolidFileOpenCommand()
 {
-	return sdr::Cmd::FILE_OPEN;
+
 }
 
 bool SolidFileOpenCommand::IsSupported() const
@@ -53,7 +54,7 @@ std::unique_ptr<IOperation> SolidFileOpenCommand::Execute(const CommandParameter
 
 	std::wstring filePath = showOpenFileDialog_();
 	if (filePath.empty())
-		return nullptr; // ÓÃ»§È¡Ïû
+		return nullptr; // ç”¨æˆ·å–æ¶ˆ
 
 	IDocument* doc = openDocument_(filePath);
 	if (!doc) 
@@ -75,8 +76,8 @@ std::wstring SolidFileOpenCommand::showOpenFileDialog_() const
 {
 	//QWidget* parent = m_mainWindow ? m_mainWindow->AsQMainWindow() : nullptr;
 
-	//// ¹ıÂË¿ÉÒÔ´Ó UiApplicationConfig / CommandsConfig µÄ profile ÖĞÄÃ£¬´Ë´¦¸øÒ»¸ö
-	//// Õë¶Ô .alice + ³£¹æ CAD ¸ñÊ½µÄÊ¾Àı¡£
+	//// è¿‡æ»¤å¯ä»¥ä» UiApplicationConfig / CommandsConfig çš„ profile ä¸­æ‹¿ï¼Œæ­¤å¤„ç»™ä¸€ä¸ª
+	//// é’ˆå¯¹ .alice + å¸¸è§„ CAD æ ¼å¼çš„ç¤ºä¾‹ã€‚
 	//const QString filter =
 	//	QObject::tr("Alice Documents (*.alice);;"
 	//		"STEP Files (*.step *.stp);;"

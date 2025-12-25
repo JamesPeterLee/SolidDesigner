@@ -12,12 +12,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: configure
-      run: ./configure
-    - name: make
-      run: make
-    - name: make check
-      run: make check
-    - name: make distcheck
-      run: make distcheck
+    - name: Checkout repository(with submodules over SSH)
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 1
+        ssh-key: ${{ secrets.ALICE_DEPLOY_KEY }}
+        
+    - name: Ensure submodules are initialized
+      run: |
+        git submodule sync --recursive
+        git submodule update --init --recursive --depth 1
+        git submodule status
+        git submodule foreach --recursive 'echo "== $name =="; git remote -v'
+       
+
+    - name: Install Qt5 (Ubuntu)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends \
+          qtbase5-dev qtbase5-dev-tools qt5-qmake \
+          qttools5-dev qttools5-dev-tools \
+          libqt5svg5-dev\
+          qtdeclarative5-dev \
+          qtquickcontrols2-5-dev\
+          python3 \
+          uuid-dev
+
+
+       
+    - name: Configure with CMake (headless)
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DSD_BUILD_DESIGNER=ON -DSD_BUILD_DEMOS=ON -DQt5_DIR=/usr/lib/x86_64-linux-gnu/cmake/Qt5
+
+    - name: Build
+      run: cmake --build build --config Release --parallel

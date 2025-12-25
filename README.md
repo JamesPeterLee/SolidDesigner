@@ -1,4 +1,6 @@
-# SolidDesigner
+# SolidDesigner 
+
+## [English](README.md) | [日本語](README.ja.md) | [Français](README.fr.md) | [Deutsch](README.de.md) | [Español](README.es.md) | [Русский](README.ru.md)
 
 **An open‑source platform for parametric CAD, high‑fidelity CAE, and topology optimization — with simulation‑driven design and AI assistance.**
 
@@ -68,6 +70,7 @@ Physical Structure
     |
     |----- Alice  (submodule)
     |         |
+    |         |---- Bootstrap
     |         |---- Core
     |         |---- Data
     |         |---- Interaction
@@ -79,6 +82,7 @@ Physical Structure
               |-- DATA
               |-- Interaction
               |-- UI
+              |-- Plugins
 ```
 
 ### Layered Architecture (high‑level)
@@ -199,6 +203,7 @@ cmake -S . -B build -G Ninja \
 
 cmake --build build --parallel
 cmake --install build
+**Headless/CI builds**: If you don't have Qt available, disable the GUI target with `-DSD_BUILD_DESIGNER=OFF`.
 ```
 
 Run the app (paths may differ):
