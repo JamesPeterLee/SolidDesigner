@@ -2,10 +2,14 @@
 <UiApplicationConfig version="1.0" product="SolidDesigner">
   <!-- splash screen config file -->
   <Include href="SplashScreenConfig.xml"/>
+  <!-- Icon config file -->
+  <Include href="IconLibraryConfig.xml"/>
   <!-- titlebar config file -->
   <Include href="TitleBarConfig.xml"/>
   <!-- functiona area config file -->
   <Include href="FunctionAreaConfig.xml"/>
+  <!-- workbench config file -->
+  <Include href="WorkBenchConfig.xml"/>
   
   <Theme darkMode="true">
     <Palette base="#121212" text="#E0E0E0" accent="#FF9E00"/>
